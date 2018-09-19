@@ -3,7 +3,7 @@ require 'SoloLearnParser.php';
 $debugOn = true;
 
 if(isset($_POST['id']) || $debugOn){
-    $parser = new SoloLearnParser();
+    $parser = new SoloLearnParser($debugOn);
     $id = $debugOn ? "9271485" : $_POST['id'];
     $rawDatas = $parser->getPageContent($id);
     

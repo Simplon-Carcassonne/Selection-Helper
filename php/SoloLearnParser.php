@@ -1,14 +1,5 @@
 <?php
-//file_get_contents($url) se fait bloquer
-/*$url = 'https://www.sololearn.com/Profile/9271485';
-$html = file_get_contents($url);
-echo $html;*/
-
-// Afficher le code source de la page
-//echo htmlentities($result);*/
-
 require 'simple_html_dom.php';
-
 
 class SoloLearnParser{
 
@@ -25,7 +16,13 @@ class SoloLearnParser{
         $this->debugOn = $debugOn;
     }
 
-    public function getPageContent($id= "9271485"){
+    /**
+     * Get the whole page content from the $url
+     *
+     * @param string $id The profile's id we want to scrap
+     * @return string $data raw HTML 
+     */ 
+    public function getPageContent($id= "9271485"):string{
         $this->id = $id;
         $url = $this->url.$this->id;
         $ch = curl_init();
@@ -48,10 +45,16 @@ class SoloLearnParser{
         return $data;
     }
 
-    //based on simple_html_dom.php
-    //full documentation : http://simplehtmldom.sourceforge.net/
-    //download at : https://github.com/samacs/simple_html_dom
-    public function getJSONInfos($rawDatas){
+    /**
+     * Parse raw HTML , extract exact informations we want, and prepare the JSON return
+     * ==> based on simple_html_dom.php
+     * full documentation : http://simplehtmldom.sourceforge.net/
+     * download at : https://github.com/samacs/simple_html_dom
+     *
+     * @param string $rawDatas raw HTML we have to parse
+     * @return string json_encode($this->userDatas) JSON returned to JS
+     */
+    public function getJSONInfos($rawDatas):?string{
 
         $html = new simple_html_dom();
         $html->load($rawDatas);
@@ -60,11 +63,18 @@ class SoloLearnParser{
 
         if($this->debugOn){
            $this->showDebug();
+           return null;
         }
         else{
             return json_encode($this->userDatas);
         }
     }
+
+    /**
+     * Extract informations from DOM and prepare the JSON
+     *
+     * @param simple_html_dom $html object with HTML parsed to DOM 
+     */
     private function preparePHPJSON($html){
 
         //PSEUDO
@@ -94,6 +104,9 @@ class SoloLearnParser{
        
     }
 
+    /**
+     * Render all the informations scrapped and the JSON ready to be sent
+     */
     private function showDebug(){
         echo '<h1>Affichage</h1>';
         //echo $rawDatas; //for debug !!
@@ -116,36 +129,5 @@ class SoloLearnParser{
         echo '<br/> JSON to send : ';
         echo json_encode($this->userDatas);
     }
-    
-
-    /********** get DOM from HTML  *********/
-    //revelant : http://scripthere.com/how-to-scrape-content-from-a-website-using-php/
-    //@Deprecated better with simple_html_dom.php Library
-    public function getDomFromHTML($rawDatas){
-        $scriptDoc = new DOMDocument();
-        libxml_use_internal_errors(TRUE); //disable libxml errors
-        if(!empty($rawDatas)){
-            $scriptDoc->loadHTML($rawDatas);
-        }
-        libxml_clear_errors();//remove errors for bad HTML
-        $scriptXpath = new DOMXPath($scriptDoc);//get DOMxPath
-        $scriptRow = $scriptXpath->query('//h2');
-        $filtered = $scriptXpath->query("//img[@name='text1']");
-
-        var_dump($filtered);
-        if($scriptRow->length > 0){
-            foreach($scriptRow as $row){
-                echo $row->nodeValue . "<br/>";
-            }
-        }
-
-        if($filtered->length > 0){
-            foreach($filtered as $row){
-                echo $row->nodeValue . "<br/>";
-            }
-        }
-
-    }
-
 }
 ?>
